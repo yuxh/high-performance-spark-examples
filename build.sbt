@@ -36,11 +36,11 @@ javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:+CMSClassUnloadingEnabled", "-
 
 // additional libraries
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.0.1",
+  "org.scalatest" %% "scalatest" % "3.0.8",
   "org.scalacheck" %% "scalacheck" % "1.13.4",
   "junit" % "junit" % "4.12",
   "junit" % "junit" % "4.11",
-  "com.holdenkarau" %% "spark-testing-base" % "2.2.0_0.7.2",
+  "com.holdenkarau" %% "spark-testing-base" % "2.2.0_0.14.0",
   "com.novocode" % "junit-interface" % "0.11" % "test->default",
   //tag::scalaLogging[]
   "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
@@ -92,6 +92,6 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
 
 // JNI
 
-enablePlugins(JniNative)
+//enablePlugins(JniNative)
 
-sourceDirectory in nativeCompile := sourceDirectory.value
+//sourceDirectory in nativeCompile := sourceDirectory.value
