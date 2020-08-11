@@ -77,7 +77,8 @@ object GoldilocksWithHashMap {
     println(
       "aggregatedValueColumnRDD input df :" + dataFrame.rdd.getNumPartitions + "=partitioner" + dataFrame.rdd.partitioner
     )
-//此方法有bug，当有多个分区的时候，mapPartitions会按分区计算
+//此方法单独使用是有bug，当有多个分区的时候，mapPartitions会按分区计算,即结果会出现((1.5, 0), 1) ((1.5, 0), 1)，因为这两个可能在不同分区
+    //但这个函数实际上就是按分区统计的，因此这里不算bug
     dataFrame.show
     val aggregatedValueColumnRDD = dataFrame.rdd.mapPartitions(rows => {
       val valueColumnMap = new mutable.HashMap[(Double, Int), Long]()
@@ -87,7 +88,6 @@ object GoldilocksWithHashMap {
           case (value, columnIndex) =>
             val key   = (value.toString.toDouble, columnIndex)
             val count = valueColumnMap.getOrElseUpdate(key, 0)
-            println("key=" + key + "hashcode=" + key.hashCode() + ",count=" + count)
             valueColumnMap.update(key, count + 1)
         }
       })
@@ -130,15 +130,18 @@ object GoldilocksWithHashMap {
   ): Array[(Int, Array[Long])] = {
 
     val zero = Array.fill[Long](numOfColumns)(0)
-
+//每个分区内，step 1每列的计数的和
     def aggregateColumnFrequencies(partitionIndex: Int, pairs: Iterator[((Double, Int), Long)]) = {
       val columnsFreq: Array[Long] = pairs.aggregate(zero)(
         (a: Array[Long], v: ((Double, Int), Long)) => {
           val ((value, colIndex), count) = v
           a(colIndex) = a(colIndex) + count
+          println("partitionIndex=" + partitionIndex + ",a=" + a.toSeq)
           a
         },
+        //这里实际上并不起作用，因为这里pairs只能是一个分区的数据，不存在分区之间处理
         (a: Array[Long], b: Array[Long]) => {
+          println("no use@@@@@@@@@@@@@@@@@@@")
           a.zip(b).map { case (aVal, bVal) => aVal + bVal }
         }
       )
